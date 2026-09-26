@@ -1,5 +1,7 @@
 # Fitbit / Google Health → Claude, ChatGPT, Gemini
 
+*English: personal MCP connector exposing your Google Health (Fitbit) data to AI assistants, self-hosted on Cloudflare Workers free tier. Setup guide is currently in Russian.*
+
 **Личный MCP-коннектор**: спрашивайте свой ИИ-ассистент о шагах, сне, пульсе,
 SpO2 и тренировках с браслета Fitbit (или Pixel Watch) — и записывайте вес,
 еду, воду и тренировки голосом прямо из чата.
@@ -18,7 +20,9 @@ SpO2 и тренировках с браслета Fitbit (или Pixel Watch) �
 **ChatGPT** (Developer mode, планы Plus/Pro), **Gemini CLI**, а также любым
 MCP-клиентом со Streamable HTTP + OAuth.
 
-Подробная пошаговая инструкция для новичков: [docs/4pda.md](docs/4pda.md).
+🧭 **Не программист? Не страшно.** Подробная пошаговая инструкция для новичков
+(каждый клик, все ошибки и решения): **[docs/SETUP.md](docs/SETUP.md)**.
+Версия для вставки в форумный пост (BB-код): [docs/4pda.bbcode.txt](docs/4pda.bbcode.txt).
 
 ---
 
@@ -60,7 +64,7 @@ Claude / ChatGPT / Gemini ──MCP──► ваш Worker на Cloudflare (эт
 
 ## Установка (кратко)
 
-Полная инструкция со скриншотными подсказками — [docs/4pda.md](docs/4pda.md).
+Полная пошаговая инструкция — [docs/SETUP.md](docs/SETUP.md).
 
 1. **Cloudflare** — нажмите кнопку «Deploy to Cloudflare» выше. Cloudflare
    склонирует репозиторий в ваш GitHub, сам создаст KV-хранилище и настроит

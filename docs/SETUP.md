@@ -211,5 +211,5 @@ Compare** → merge → Cloudflare пересоберёт сам.
 ---
 
 *Проект открытый (MIT): github.com/deslabpro-max/fitbit-google-health-mcp.
-Вопросы и баги — в Issues репозитория или в этой теме. Не является
+Вопросы и баги — в Issues репозитория или в теме на 4pda. Не является
 медицинским изделием; не аффилировано с Google/Fitbit.*
