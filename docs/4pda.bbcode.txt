@@ -1,4 +1,4 @@
-[SIZE=5][B]Подключаем браслет Fitbit к Claude, ChatGPT и Gemini (свой бесплатный коннектор)[/B][/SIZE]
+[SIZE=5][B]Подключаем браслет Fitbit к Claude и ChatGPT (свой бесплатный коннектор)[/B][/SIZE]
 
 Инструкция для обычного пользователя без опыта программирования. По шагам поднимем [B]личный бесплатный сервер-коннектор[/B], через который ИИ-ассистент читает данные браслета и ведёт дневник питания, воды и веса. Время — 30–40 минут, нужен только браузер.
 
@@ -30,7 +30,7 @@
 [*]Бесплатный аккаунт GitHub
 [*]Бесплатный аккаунт Cloudflare
 [*]Google-аккаунт (тот же, что с браслетом)
-[*]ИИ: Claude (платный план), ChatGPT Plus/Pro или бесплатный Gemini CLI
+[*]ИИ: Claude (платный план) или ChatGPT Plus/Pro
 [/LIST]
 
 [SIZE=4][B]Часть 1. Сервер на Cloudflare (5 минут)[/B][/SIZE]
@@ -92,22 +92,7 @@
 [/LIST]
 Интерфейс OpenAI часто меняется — ищите слова Developer mode / Connectors / MCP. Справка: [URL=https://help.openai.com/en/articles/12584461]help.openai.com — Developer mode and MCP apps[/URL]
 
-[SIZE=4][B]Часть 4в. Подключение к Gemini[/B][/SIZE]
-В приложении и на сайте Gemini свои MCP-коннекторы пока добавить нельзя. Зато есть [B]Gemini CLI[/B] — официальный бесплатный клиент Google для компьютера (тот же Gemini в терминале), MCP поддерживает полностью.
-[LIST=1]
-[*]Установите Node.js LTS (nodejs.org), затем в терминале: [CODE]npm install -g @google/gemini-cli
-gemini[/CODE] При первом запуске — вход в Google-аккаунт (бесплатного лимита хватает с запасом)
-[*]Откройте файл ~/.gemini/settings.json (Windows: C:\Users\ИМЯ\.gemini\settings.json; нет файла — создайте) и добавьте: [CODE]{
-  "mcpServers": {
-    "fitbit": {
-      "httpUrl": "https://fitbit-health-connector.ВАШ-ПОДДОМЕН.workers.dev/mcp",
-      "oauth": { "enabled": true }
-    }
-  }
-}[/CODE]
-[*]Запустите gemini заново; при первом обращении (или команде /mcp auth fitbit) откроется браузер с окном Google → разрешить
-[*]Проверка: /mcp list покажет инструменты; дальше просто спрашивайте
-[/LIST]
+[I]А Gemini? В приложении и на сайте Gemini свои коннекторы пока добавить нельзя. Для энтузиастов есть вариант через терминальный Gemini CLI — см. README репозитория на GitHub.[/I]
 
 [B]Первые вопросы для проверки[/B]
 [LIST]
