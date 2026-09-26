@@ -1,0 +1,24 @@
+{
+  // Имя воркера — станет частью адреса:
+  // https://fitbit-health-connector.<ваш-поддомен>.workers.dev
+  "name": "fitbit-health-connector",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+
+  // KV-хранилище для OAuth-токенов.
+  // При установке через кнопку «Deploy to Cloudflare» хранилище создаётся
+  // и привязывается автоматически (id ниже — заглушка, Cloudflare заменит её).
+  // При ручной установке: npx wrangler kv namespace create OAUTH_KV
+  // и вставьте выданный id сюда.
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      "id": "00000000000000000000000000000000"
+    }
+  ]
+
+  // Секреты задаются в панели Cloudflare (Settings → Variables and Secrets)
+  // или командами — в этом файле они НЕ хранятся:
+  //   npx wrangler secret put GOOGLE_CLIENT_ID
+  //   npx wrangler secret put GOOGLE_CLIENT_SECRET
+}

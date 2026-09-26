@@ -1,0 +1,143 @@
+[SIZE=5][B]Подключаем браслет Fitbit к Claude, ChatGPT и Gemini (свой бесплатный коннектор)[/B][/SIZE]
+
+Инструкция для обычного пользователя без опыта программирования. По шагам поднимем [B]личный бесплатный сервер-коннектор[/B], через который ИИ-ассистент читает данные браслета и ведёт дневник питания, воды и веса. Время — 30–40 минут, нужен только браузер.
+
+Что получится — в любом чате с ИИ можно писать:
+[LIST]
+[*]«Как я спал на этой неделе? Сравни с прошлой»
+[*]«Сколько шагов и калорий сегодня?»
+[*]«Какой пульс покоя за месяц, есть ли тренд?»
+[*]«Запиши обед: борщ и котлета, примерно 700 ккал»
+[*]«Запиши стакан воды» / «запиши вес 82,5»
+[*]«Были ли уведомления об аритмии?»
+[/LIST]
+
+[SPOILER=Как это работает и почему безопасно]
+Браслет синхронизируется с приложением Fitbit, данные попадают в облако Google (Google Health API). Мы разворачиваем на бесплатном тарифе Cloudflare [B]ваш личный сервер[/B] (протокол MCP — его понимают Claude, ChatGPT и Gemini), который читает эти данные после вашего разрешения через обычное окно входа Google.
+
+[LIST]
+[*]сервер ваш личный, «сервисов-посредников» в цепочке нет;
+[*]доступ только на чтение (плюс запись ручных логов: еда, вода, вес); данные браслета испортить невозможно — Google это запрещает на уровне API;
+[*]ключи и токены хранятся только в вашем Cloudflare-аккаунте;
+[*]всё на бесплатных тарифах, карта нигде не нужна.
+[/LIST]
+Код открытый (MIT): [URL=https://github.com/deslabpro-max/fitbit-google-health-mcp]github.com/deslabpro-max/fitbit-google-health-mcp[/URL]
+[/SPOILER]
+
+[B]Что понадобится[/B]
+[LIST=1]
+[*]Браслет/часы Fitbit (Air, Charge, Inspire, Sense, Versa…) или Pixel Watch, привязанные к Google-аккаунту (приложение Fitbit на телефоне)
+[*]Бесплатный аккаунт GitHub
+[*]Бесплатный аккаунт Cloudflare
+[*]Google-аккаунт (тот же, что с браслетом)
+[*]ИИ: Claude (платный план), ChatGPT Plus/Pro или бесплатный Gemini CLI
+[/LIST]
+
+[SIZE=4][B]Часть 1. Сервер на Cloudflare (5 минут)[/B][/SIZE]
+[LIST=1]
+[*]Откройте репозиторий: [URL=https://github.com/deslabpro-max/fitbit-google-health-mcp]github.com/deslabpro-max/fitbit-google-health-mcp[/URL]
+[*]Нажмите в README кнопку [B]Deploy to Cloudflare[/B]
+[*]Войдите в Cloudflare (или зарегистрируйтесь) и разрешите доступ к GitHub
+[*]На странице настройки ничего менять не обязательно — жмите [B]Create and deploy[/B]. Cloudflare сам скопирует код в ваш GitHub, создаст хранилище токенов и запустит сервер
+[*]Через минуту-две получите адрес вида [CODE]https://fitbit-health-connector.ВАШ-ПОДДОМЕН.workers.dev[/CODE] [B]Скопируйте его.[/B] Откройте в браузере: страница «Коннектор Fitbit Air → Claude» = сервер работает
+[/LIST]
+
+[SIZE=4][B]Часть 2. Google Cloud: доступ к данным браслета (15 минут)[/B][/SIZE]
+
+[B]2.1. Проект и включение API[/B]
+[LIST=1]
+[*]Откройте console.cloud.google.com под аккаунтом с браслетом
+[*]Выбор проекта (сверху слева) → [B]New project[/B] → имя любое → Create
+[*]В поиске сверху наберите [B]Google Health API[/B] → откройте → [B]Enable[/B]
+[/LIST]
+
+[B]2.2. Экран согласия и Test users[/B]
+[LIST=1]
+[*]В поиске: [B]OAuth consent screen[/B]. Если просит — заполните минимум: имя приложения, ваш e-mail, аудитория External, режим Testing
+[*]Раздел [B]Audience[/B] → [B]Test users[/B] → Add users → добавьте СВОЙ Google-адрес. Без этого будет ошибка access_denied
+[/LIST]
+
+[B]2.3. OAuth-клиент[/B]
+[LIST=1]
+[*]Раздел [B]Clients[/B] (Credentials → OAuth client ID) → [B]Create client[/B]
+[*]Тип: [B]Web application[/B] (не Desktop!)
+[*]Имя любое
+[*]Authorized redirect URIs → Add URI → адрес из Части 1 плюс /callback: [CODE]https://fitbit-health-connector.ВАШ-ПОДДОМЕН.workers.dev/callback[/CODE] без пробелов и слэша на конце
+[*]Create → появятся [B]Client ID[/B] (…apps.googleusercontent.com) и [B]Client secret[/B] (GOCSPX-…). Секрет показывают [B]один раз[/B] — сразу скопируйте оба (или Download JSON)
+[/LIST]
+
+[SIZE=4][B]Часть 3. Ключи серверу (3 минуты)[/B][/SIZE]
+[LIST=1]
+[*]Панель Cloudflare → Compute → Workers & Pages → воркер fitbit-health-connector → [B]Settings → Variables and Secrets[/B] → Add
+[*]Type: Secret, имя [CODE]GOOGLE_CLIENT_ID[/CODE], значение — Client ID → Save
+[*]Ещё раз Add: Type Secret, имя [CODE]GOOGLE_CLIENT_SECRET[/CODE], значение — GOCSPX-… → Save
+[/LIST]
+Имена — ровно такими заглавными буквами.
+
+[SIZE=4][B]Часть 4а. Подключение к Claude[/B][/SIZE]
+[LIST=1]
+[*]claude.ai → Settings → [B]Connectors[/B]
+[*][B]Add custom connector[/B] → URL: [CODE]https://fitbit-health-connector.ВАШ-ПОДДОМЕН.workers.dev/mcp[/CODE]
+[*]Add → [B]Connect[/B] → окно Google → выбрать аккаунт с браслетом. Предупреждение «Google hasn't verified this app» — это ваше личное приложение в режиме тестирования, жмите Continue → разрешить
+[*]Работает во всех чатах: браузер, телефон, десктоп. Проверка: «сколько шагов я сегодня прошёл?»
+[/LIST]
+
+[SIZE=4][B]Часть 4б. Подключение к ChatGPT (Plus/Pro)[/B][/SIZE]
+[LIST=1]
+[*]ChatGPT → аватарка → Settings → [B]Apps & Connectors[/B] → внизу Advanced settings → включить [B]Developer mode[/B]
+[*]Вернуться в Apps & Connectors → [B]Create[/B] (кнопка появляется после включения)
+[*]Имя Fitbit, MCP Server URL: [CODE]https://fitbit-health-connector.ВАШ-ПОДДОМЕН.workers.dev/mcp[/CODE] Authentication: [B]OAuth[/B] → создать
+[*]Откроется окно Google → Continue → разрешить
+[*]В чате: меню «+» → ваш коннектор. Проверка: «покажи мой сон за неделю через Fitbit»
+[/LIST]
+Интерфейс OpenAI часто меняется — ищите слова Developer mode / Connectors / MCP. Справка: [URL=https://help.openai.com/en/articles/12584461]help.openai.com — Developer mode and MCP apps[/URL]
+
+[SIZE=4][B]Часть 4в. Подключение к Gemini[/B][/SIZE]
+В приложении и на сайте Gemini свои MCP-коннекторы пока добавить нельзя. Зато есть [B]Gemini CLI[/B] — официальный бесплатный клиент Google для компьютера (тот же Gemini в терминале), MCP поддерживает полностью.
+[LIST=1]
+[*]Установите Node.js LTS (nodejs.org), затем в терминале: [CODE]npm install -g @google/gemini-cli
+gemini[/CODE] При первом запуске — вход в Google-аккаунт (бесплатного лимита хватает с запасом)
+[*]Откройте файл ~/.gemini/settings.json (Windows: C:\Users\ИМЯ\.gemini\settings.json; нет файла — создайте) и добавьте: [CODE]{
+  "mcpServers": {
+    "fitbit": {
+      "httpUrl": "https://fitbit-health-connector.ВАШ-ПОДДОМЕН.workers.dev/mcp",
+      "oauth": { "enabled": true }
+    }
+  }
+}[/CODE]
+[*]Запустите gemini заново; при первом обращении (или команде /mcp auth fitbit) откроется браузер с окном Google → разрешить
+[*]Проверка: /mcp list покажет инструменты; дальше просто спрашивайте
+[/LIST]
+
+[B]Первые вопросы для проверки[/B]
+[LIST]
+[*]«Покажи статус браслета» — модель, заряд, когда была синхронизация
+[*]«Сводка за сегодня» — шаги, сон с фазами, пульс, SpO2, температура кожи
+[*]«Запиши стакан воды 250 мл»
+[/LIST]
+Если данных за сегодня нет — откройте приложение Fitbit на телефоне (данные уходят в облако при синхронизации).
+
+[SPOILER=Что умеет коннектор (15 инструментов)]
+[LIST]
+[*][B]Чтение:[/B] сводка дня; активность по дням (шаги, дистанция, калории, этажи, зонные минуты); сон с фазами (глубокий/REM/лёгкий); пульс (покоя, min/max/avg, по часам); тренировки; статус устройства (батарея, синхронизация); ещё ~25 метрик — SpO2, HRV, дыхание во сне, температура кожи во сне, зоны пульса, сидячие периоды, глюкоза, вода, питание, уведомления об аритмии (AFib)
+[*][B]Запись:[/B] вес, % жира, вода, еда (с калориями и БЖУ), тренировки, настроение, симптомы
+[*][B]Удаление:[/B] только записей, созданных самим коннектором — данные браслета неприкосновенны
+[/LIST]
+[/SPOILER]
+
+[SPOILER=Частые проблемы и решения]
+[LIST]
+[*][B]access_denied в окне Google[/B] — ваш аккаунт не добавлен в Test users (Часть 2.2)
+[*][B]redirect_uri_mismatch[/B] — URI в клиенте Google не совпадает с адресом воркера + /callback; проверьте до буквы, без слэша на конце
+[*][B]«Google hasn't verified this app»[/B] — норма: приложение ваше личное. Continue
+[*][B]403 SERVICE_DISABLED[/B] — не включён Google Health API (Часть 2.1)
+[*][B]Просит переподключиться[/B] — в режиме «Тестирование» Google может ограничивать токен ~7 днями. Либо переподключайтесь, либо OAuth consent screen → Publish app (In production) — предупреждение о непроверенном приложении останется, это ок
+[*][B]Шаги пустые, а пульс есть[/B] — сводки нового устройства Google считает с задержкой до нескольких часов; коннектор сам покажет диагностику
+[*][B]Нет данных вообще[/B] — браслет не синхронизирован: откройте приложение Fitbit; «статус браслета» покажет lastSyncTime
+[*][B]В ChatGPT нет кнопки Create[/B] — не включён Developer mode или план Free
+[/LIST]
+[/SPOILER]
+
+[B]Обновления:[/B] кнопка Deploy создала вашу копию репозитория на GitHub с автосборкой — новые версии из оригинала подтягиваются через Sync fork, Cloudflare пересоберёт сам.
+
+[I]Проект открытый (MIT), не аффилирован с Google/Fitbit, не является медицинским изделием. Вопросы и баги — в теме или в Issues на GitHub.[/I]
