@@ -22,6 +22,7 @@ MCP-клиентом со Streamable HTTP + OAuth.
 
 🧭 **Не программист? Не страшно.** Подробная пошаговая инструкция для новичков
 (каждый клик, все ошибки и решения): **[docs/SETUP.md](docs/SETUP.md)**.
+📄 Красивая PDF-версия для печати и Telegram: [docs/Инструкция-Fitbit-Claude-ChatGPT.pdf](docs/Инструкция-Fitbit-Claude-ChatGPT.pdf).
 Версия для вставки в форумный пост (BB-код): [docs/4pda.bbcode.txt](docs/4pda.bbcode.txt).
 
 ---
