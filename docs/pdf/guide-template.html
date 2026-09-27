@@ -98,7 +98,7 @@ a{color:var(--acc)}
 </style>
 </head>
 <body>
-<div class="toolbar"><b>Fitbit → ИИ</b><span>Инструкция · 6 страниц A4</span><button onclick="window.print()">Сохранить в PDF</button><span>в окне печати выберите «Сохранить как PDF», поля — «Нет»</span></div>
+<div class="toolbar"><b>Fitbit → ИИ</b><span>Инструкция · 7 страниц A4</span><button onclick="window.print()">Сохранить в PDF</button><span>в окне печати выберите «Сохранить как PDF», поля — «Нет»</span></div>
 
 <!-- 1. ОБЛОЖКА -->
 <section class="page dark cover">
@@ -268,12 +268,81 @@ a{color:var(--acc)}
     <div class="card faq"><b>В ChatGPT нет кнопки Create</b><small>Не включён Developer mode или план Free.</small></div>
   </div>
   <div class="card buy" style="margin-bottom:5mm;padding:12px 14px">
-    <div style="flex:1"><div class="eyebrow" style="margin-bottom:3px">ГДЕ КУПИТЬ</div><div style="font:700 12pt Unbounded;margin-bottom:3px">Fitbit Air, чёрный — на Ozon</div><small style="color:var(--mut)">Подойдёт и любой Fitbit или Pixel Watch.</small></div>
-    <a class="btn" href="https://www.ozon.ru/product/google-fitnes-braslet-fitbit-air-chernyy-4965215410/">Открыть на Ozon</a>
-    <a href="https://www.ozon.ru/product/google-fitnes-braslet-fitbit-air-chernyy-4965215410/" style="width:19mm;height:19mm;display:block;flex:none" aria-label="QR-код на товар в Ozon">{{QR_OZON}}</a>
+    <span style="width:34px;height:34px;border-radius:9px;background:var(--dark);color:var(--mint);font:600 13px 'IBM Plex Mono';display:flex;align-items:center;justify-content:center;flex:none">&gt;_</span>
+    <div style="flex:1"><div class="eyebrow" style="margin-bottom:3px">ЛЕНЬ ДЕЛАТЬ РУКАМИ?</div><div style="font:700 12pt Unbounded;margin-bottom:3px">Пусть всё сделает ИИ-агент</div><small style="color:var(--mut)">Промт для Claude Code или Codex — на следующей странице.</small></div>
+    <a class="btn" href="#agent" style="text-decoration:none">Промт → стр. 7</a>
   </div>
   <div class="final"><div style="flex:1"><h3>Код, обновления и помощь</h3><p>Всё открыто на GitHub: код, подробная инструкция, раздел Issues для вопросов. Новые версии подтягиваются кнопкой Sync fork в вашей копии — Cloudflare пересоберёт сам.</p></div><a class="qr" href="https://github.com/deslabpro-max/fitbit-google-health-mcp" style="width:22mm;height:22mm;display:block" aria-label="Код проекта на GitHub">{{QR_REPO}}</a></div>
   <div class="foot"><span>github.com/deslabpro-max/fitbit-google-health-mcp · MIT · не медицинское изделие</span><span>6</span></div>
+</section>
+
+<!-- 7. ИИ-АГЕНТ -->
+<section class="page" id="agent">
+  <div class="bar"><span class="logo">Fitbit → ИИ</span><span>Установка с ИИ-агентом</span></div>
+  <div class="eyebrow">ВАРИАНТ БЕЗ РУЧНОЙ РАБОТЫ</div>
+  <h2>Пусть всё сделает ИИ-агент</h2>
+  <p class="lead">Откройте на компьютере <b>Claude Code</b> или <b>OpenAI Codex</b> и вставьте промт ниже целиком. Агент сам выполнит терминальную часть, а браузерные шаги проведёт с вами по одному клику.</p>
+  <div class="grid3" style="margin-bottom:5mm">
+    <div class="card feat"><b>Агент делает сам</b><small>клонирует код, ставит зависимости, разворачивает сервер, создаёт хранилище</small></div>
+    <div class="card feat"><b>Вы — в браузере</b><small>вход в аккаунты, Google Cloud Console, окна согласия: по одному клику</small></div>
+    <div class="card feat"><b>Секреты — только вы</b><small>Client ID и секрет вводите в терминал, в чат они не попадают</small></div>
+  </div>
+  <div style="background:var(--dark);border-radius:12px;padding:12px 16px;position:relative">
+    <div class="row" style="justify-content:space-between;margin-bottom:6px"><span style="font:700 7.4pt 'IBM Plex Sans';letter-spacing:.06em;color:var(--mint)">ПРОМТ — СКОПИРУЙТЕ ЦЕЛИКОМ</span><button onclick="navigator.clipboard.writeText(document.getElementById('prompt').innerText).then(()=>{this.textContent='Скопировано ✓'})" style="font:600 8pt 'IBM Plex Sans';border:0;border-radius:6px;padding:4px 10px;background:var(--acc);color:#fff;cursor:pointer">Копировать</button></div>
+    <pre id="prompt" style="margin:0;white-space:pre-wrap;font:7.2pt/1.34 'IBM Plex Mono',monospace;color:#DCEBE4">Ты — мой помощник по установке. Установи мне личный коннектор
+«Fitbit / Google Health → Claude и ChatGPT» строго по инструкции из
+репозитория https://github.com/deslabpro-max/fitbit-google-health-mcp.
+Перед началом прочитай целиком README.md и docs/SETUP.md — это источник
+истины; если что-то в этом промте с ними расходится, прав репозиторий.
+
+ПРАВИЛА
+- Всё, что делается в терминале, делай сам: git, Node.js/npm, npx wrangler.
+  Перед каждой командой одной фразой объясняй, что она делает.
+- Шаги, которые возможны только в браузере (вход в аккаунты, Cloudflare
+  Dashboard, Google Cloud Console, окна согласия), не выдумывай и не делай
+  вслепую: давай мне точные клики по одному шагу и жди, пока я напишу
+  «готово». Если у тебя есть управление браузером — можешь нажимать сам,
+  но на экранах входа и согласия останавливайся и передавай управление мне.
+- Секреты (Client secret, токены, пароли) я в чат НЕ присылаю. Когда нужно
+  их задать, запусти `npx wrangler secret put &lt;ИМЯ&gt;` и попроси меня ввести
+  значение прямо в терминал.
+- Ничего не удаляй и не меняй в моих существующих воркерах Cloudflare и
+  проектах Google Cloud, кроме того, что создаёшь для этой установки.
+- При ошибке сначала сверься с разделом «Частые проблемы» в docs/SETUP.md.
+- После каждого шага коротко пиши: что сделано, что дальше.
+
+ПЛАН
+1. Проверь, что установлены git и Node.js LTS (node -v, git --version).
+   Если нет — подскажи, как поставить под мою ОС, и дождись меня.
+2. Склонируй репозиторий в удобную папку и выполни npm install.
+3. npx wrangler login — откроется браузер, я подтвержу вход в Cloudflare.
+4. npx wrangler kv namespace create OAUTH_KV — впиши выданный id в
+   wrangler.jsonc (биндинг OAUTH_KV), если wrangler не сделал это сам.
+5. npx wrangler deploy. Запомни адрес воркера
+   (https://&lt;имя&gt;.&lt;поддомен&gt;.workers.dev), открой его и убедись, что
+   показывается страница «Коннектор Fitbit Air → Claude».
+6. Google Cloud (docs/SETUP.md, часть 2):
+   - если установлен и авторизован gcloud — создай проект и включи
+     Google Health API командами (gcloud projects create …,
+     gcloud services enable health.googleapis.com); не вышло — через
+     консоль по кликам;
+   - экран согласия (External, режим Testing), мой адрес в Test users и
+     OAuth-клиент типа «Web application» с Authorized redirect URI
+     https://&lt;адрес воркера&gt;/callback — только через консоль: веди меня
+     по шагам. Напомни, что Client secret показывают один раз.
+7. npx wrangler secret put GOOGLE_CLIENT_ID, затем
+   npx wrangler secret put GOOGLE_CLIENT_SECRET — значения ввожу я.
+8. Объясни подключение:
+   - Claude: Settings → Connectors → Add custom connector →
+     https://&lt;адрес воркера&gt;/mcp → Connect → окно Google → разрешить;
+   - ChatGPT (Plus/Pro): Settings → Apps &amp; Connectors → Advanced →
+     Developer mode → Create → тот же URL, авторизация OAuth.
+9. В конце дай сводку: адрес сервера, что создано (воркер, KV, проект
+   Google, OAuth-клиент), и фразы для проверки в чате:
+   «Покажи статус браслета», «Сводка за сегодня», «Запиши стакан воды».</pre>
+  </div>
+  <p style="font-size:8.4pt;color:var(--mut);margin-top:4mm">Промт также лежит на GitHub: <a href="https://github.com/deslabpro-max/fitbit-google-health-mcp/blob/main/docs/AGENT_PROMPT.md">docs/AGENT_PROMPT.md</a>. Если агент ошибся — пусть сверится с «Частыми вопросами» на стр. 6.</p>
+  <div class="foot"><span>github.com/deslabpro-max/fitbit-google-health-mcp · MIT · не медицинское изделие</span><span>7</span></div>
 </section>
 </body>
 </html>

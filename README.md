@@ -20,6 +20,8 @@ SpO2 и тренировках с браслета Fitbit (или Pixel Watch) �
 **ChatGPT** (Developer mode, планы Plus/Pro), **Gemini CLI**, а также любым
 MCP-клиентом со Streamable HTTP + OAuth.
 
+🤖 **Хотите, чтобы всё сделал ИИ?** Промт для Claude Code или Codex: [docs/AGENT_PROMPT.md](docs/AGENT_PROMPT.md).
+
 🧭 **Не программист? Не страшно.** Подробная пошаговая инструкция для новичков
 (каждый клик, все ошибки и решения): **[docs/SETUP.md](docs/SETUP.md)**.
 📄 Красивая PDF-версия для печати и Telegram: [docs/Инструкция-Fitbit-Claude-ChatGPT.pdf](docs/Инструкция-Fitbit-Claude-ChatGPT.pdf).
@@ -83,6 +85,15 @@ Claude / ChatGPT / Gemini ──MCP──► ваш Worker на Cloudflare (эт
      с тем же URL (OAuth).
    - **Gemini CLI**: блок `mcpServers` в `~/.gemini/settings.json` с
      `httpUrl` и `"oauth": {"enabled": true}`.
+
+## Установка с помощью ИИ-агента (Claude Code / Codex)
+
+Не хотите делать шаги руками? Откройте Claude Code или OpenAI Codex и
+вставьте промт из **[docs/AGENT_PROMPT.md](docs/AGENT_PROMPT.md)**. Агент сам
+выполнит терминальную часть (клонирование, `npm install`, `wrangler login`,
+KV, деплой, секреты), а браузерные шаги — Google Cloud Console и окна
+согласия — проведёт с вами по одному клику. Секреты вы вводите сами в
+терминал, в чат они не попадают.
 
 ## Ручная установка (без кнопки)
 

@@ -27,7 +27,13 @@ W, H = A4
 M = 42                      # поля
 CW = W - 2 * M              # ширина контента
 REPO = "https://github.com/deslabpro-max/fitbit-google-health-mcp"
-BUY = "https://www.ozon.ru/product/google-fitnes-braslet-fitbit-air-chernyy-4965215410/"
+PROMPT_URL = REPO + "/blob/main/docs/AGENT_PROMPT.md"
+PROMPT_MD = os.path.join(HERE, "..", "AGENT_PROMPT.md")
+
+
+def agent_prompt_text():
+    src = open(PROMPT_MD, encoding="utf-8").read()
+    return src.split("```text", 1)[1].split("```", 1)[0].strip("\n")
 
 C = lambda h: colors.HexColor(h)
 DARK, DARK2, ACC, ACC_D, MINT = C("#0B211C"), C("#12302A"), C("#0E7C6B"), C("#0A5A4E"), C("#5FD4B0")
@@ -706,21 +712,18 @@ def page_faq(c):
             para(c, a, xx + 12, y - 23, qw - 24, st(fontSize=8.2, leading=11.2, textColor=MUT))
         y -= rh + 8
 
-    # где купить
+    # установка с ИИ-агентом — отсылка к стр. 7
     y -= 6
-    kh = 74
+    kh = 64
     rrect(c, M, y - kh, CW, kh, 12, fill=WHITE, stroke=LINE)
-    c.saveState(); c.translate(M + 40, y - kh / 2); c.rotate(-18)
-    c.setFillColor(C("#235549")); c.roundRect(-9, -30, 18, 60, 8, stroke=0, fill=1)
-    c.setFillColor(C("#1B2F2A")); c.roundRect(-8, -15, 16, 30, 7, stroke=0, fill=1)
-    c.setFillColor(MINT); c.circle(0, -8, 1.4, stroke=0, fill=1); c.restoreState()
-    text(c, "ГДЕ КУПИТЬ", M + 72, y - 20, "PxB", 7.8, ACC)
-    text(c, "Fitbit Air, чёрный — на Ozon", M + 72, y - 38, "Un", 12, INK)
-    text(c, "Подойдёт и любой Fitbit или Pixel Watch.", M + 72, y - 54, "Px", 8.4, MUT)
-    bw = button(c, W - M - 196, y - kh / 2 - 10.5, "Открыть на Ozon", fill=C("#005BFF"))
-    c.linkURL(BUY, (W - M - 196, y - kh / 2 - 10.5, W - M - 196 + bw, y - kh / 2 + 10.5), relative=0)
-    rrect(c, W - M - 66, y - kh + 8, 58, 58, 5, fill=WHITE, stroke=LINE)
-    qr(c, BUY, W - M - 63, y - kh + 11, 52)
+    rrect(c, M + 14, y - kh / 2 - 17, 34, 34, 9, fill=DARK)
+    c.saveState(); c.setStrokeColor(MINT); c.setLineWidth(1.6); c.setLineCap(1); c.setLineJoin(1)
+    c.line(M + 22, y - kh / 2 + 5, M + 28, y - kh / 2); c.line(M + 28, y - kh / 2, M + 22, y - kh / 2 - 5)
+    c.line(M + 31, y - kh / 2 - 6, M + 40, y - kh / 2 - 6); c.restoreState()
+    text(c, "ЛЕНЬ ДЕЛАТЬ РУКАМИ?", M + 62, y - 20, "PxB", 7.8, ACC)
+    text(c, "Пусть всё сделает ИИ-агент", M + 62, y - 37, "Un", 12, INK)
+    text(c, "Промт для Claude Code или Codex — на следующей странице.", M + 62, y - 52, "Px", 8.4, MUT)
+    button(c, W - M - 118, y - kh / 2 - 10.5, "Промт → стр. 7", fill=ACC)
     y -= kh + 14
 
     # финальный блок
@@ -735,12 +738,51 @@ def page_faq(c):
          M + 20, y - 40, CW - 140, st(fontSize=8.8, leading=12.4, textColor=SAGE_T))
 
 
+def page_agent(c):
+    header_light(c, 7, "Установка с ИИ-агентом")
+    y = H - 64
+    text(c, "ВАРИАНТ БЕЗ РУЧНОЙ РАБОТЫ", M, y, "PxB", 8, ACC); y -= 24
+    text(c, "Пусть всё сделает ИИ-агент", M, y, "Un", 17, INK); y -= 16
+    y -= para(c, "Откройте на компьютере <b>Claude Code</b> или <b>OpenAI Codex</b> и вставьте промт ниже целиком. "
+              "Агент сам выполнит терминальную часть, а браузерные шаги проведёт с вами по одному клику.",
+              M, y, CW, st(fontSize=10.2, leading=15, textColor=MUT)) + 10
+    cards = [("Агент делает сам", "клонирует код, ставит зависимости, разворачивает сервер, создаёт хранилище"),
+             ("Вы — в браузере", "вход в аккаунты, Google Cloud Console, окна согласия: по одному клику"),
+             ("Секреты — только вы", "Client ID и секрет вводите в терминал, в чат они не попадают")]
+    cw3 = (CW - 20) / 3
+    for i, (a, b) in enumerate(cards):
+        xx = M + i * (cw3 + 10)
+        rrect(c, xx, y - 64, cw3, 64, 10, fill=WHITE, stroke=LINE)
+        rrect(c, xx + 12, y - 20, 4, 10, 2, fill=ACC)
+        text(c, a, xx + 22, y - 18.5, "PxB", 9.4, INK)
+        para(c, b, xx + 12, y - 26, cw3 - 22, st(fontSize=8, leading=10.6, textColor=MUT))
+    y -= 76
+    from reportlab.lib.utils import simpleSplit
+    lines = []
+    for raw in agent_prompt_text().split("\n"):
+        lines += simpleSplit(raw, "Mo", 7.3, CW - 36) if raw.strip() else [""]
+    lh = 9.6
+    bh = len(lines) * lh + 28
+    rrect(c, M, y - bh, CW, bh, 12, fill=DARK)
+    text(c, "ПРОМТ — СКОПИРУЙТЕ ЦЕЛИКОМ", M + 18, y - 16, "PxB", 7.4, MINT)
+    yy = y - 30
+    for ln in lines:
+        text(c, ln, M + 18, yy, "Mo", 7.3, C("#DCEBE4")); yy -= lh
+    y -= bh + 12
+    rrect(c, W - M - 62, y - 58, 58, 58, 5, fill=WHITE, stroke=LINE)
+    qr(c, PROMPT_URL, W - M - 59, y - 55, 52)
+    c.linkURL(PROMPT_URL, (W - M - 62, y - 58, W - M - 4, y), relative=0)
+    para(c, "Копировать текст из PDF неудобно — возьмите промт на GitHub: <font name='Mo' size='8'>docs/AGENT_PROMPT.md</font> "
+            "(QR-код справа). Если агент ошибся — пусть сверится с разделом «Частые проблемы» на стр. 6.",
+         M, y - 6, CW - 80, S_BODY_S)
+
+
 def build(out):
     c = rl_canvas.Canvas(out, pagesize=A4)
     c.setTitle("Fitbit → Claude и ChatGPT: инструкция по подключению")
     c.setAuthor("deslabpro-max")
     c.setSubject("Личный MCP-коннектор Google Health для Claude и ChatGPT")
-    for fn in (page_cover, page_overview, page_step1, page_step2, page_step34, page_faq):
+    for fn in (page_cover, page_overview, page_step1, page_step2, page_step34, page_faq, page_agent):
         fn(c); c.showPage()
     c.save()
 
