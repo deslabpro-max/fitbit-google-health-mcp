@@ -213,7 +213,66 @@ def callout(c, x, ytop, w, title, body, warn=False):
 
 # ======================= СТРАНИЦЫ =======================
 
+COVER_IMG = next((os.path.join(HERE, f) for f in ("cover.png", "cover.jpg", "cover.webp")
+                  if os.path.exists(os.path.join(HERE, f))), None)
+HERO_IMG = next((os.path.join(HERE, f) for f in ("hero.png", "hero.jpg", "hero.webp")
+                 if os.path.exists(os.path.join(HERE, f))), None)
+
+
+def draw_image_cover(c, path, x, y, w, h):
+    """Картинка «cover»: заполняет рамку, лишнее обрезается по центру."""
+    from reportlab.lib.utils import ImageReader
+    img = ImageReader(path); iw, ih = img.getSize()
+    k = max(w / iw, h / ih); dw, dh = iw * k, ih * k
+    c.saveState(); p = c.beginPath(); p.rect(x, y, w, h); c.clipPath(p, stroke=0)
+    c.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); c.restoreState()
+
+
+def fade(c, x, y, w, h, color, top_alpha, bottom_alpha, steps=40):
+    for i in range(steps):
+        a = top_alpha + (bottom_alpha - top_alpha) * i / (steps - 1)
+        c.saveState(); c.setFillColor(color); c.setFillAlpha(a)
+        c.rect(x, y + h - (i + 1) * h / steps, w, h / steps + 0.5, stroke=0, fill=1); c.restoreState()
+
+
+def page_cover_image(c):
+    c.setFillColor(DARK); c.rect(0, 0, W, H, stroke=0, fill=1)
+    draw_image_cover(c, COVER_IMG, 0, 0, W, H)
+    fade(c, 0, H - 380, W, 380, DARK, 0.92, 0.0)
+    fade(c, 0, 0, W, 250, DARK, 0.0, 0.95)
+    logo(c, M, H - 52, 12)
+    x = M
+    for s in ["Бесплатно", "Открытый код · MIT", "Без посредников"]:
+        x += chip(c, x, H - 104, s, fill=DARK) + 6
+    t = Paragraph("Спросите свой браслет. Словами.",
+                  st(fontName="Un", fontSize=34, leading=40, textColor=C("#F2EFE6")))
+    _, th = t.wrap(CW - 40, 400); t.drawOn(c, M, H - 124 - th)
+    y = H - 124 - th - 16
+    para(c, "Пошаговая инструкция: подключаем браслет Fitbit (или Pixel Watch) к <b>Claude</b> и <b>ChatGPT</b>. "
+            "Сон, пульс, шаги, SpO2 — прямо в чате, плюс дневник еды, воды и веса голосом.",
+         M, y, 360, st(fontSize=11, leading=16, textColor=SAGE_T))
+    cover_footer(c)
+
+
+def cover_footer(c):
+    rrect(c, M, 60, CW, 104, 14, fill=DARK2)
+    cols = [("4 шага", "без программирования"), ("40 мин", "от нуля до работы"),
+            ("0 ₽", "бесплатные тарифы"), ("15", "инструментов в чате")]
+    cw = (CW - 118) / 4
+    for i, (a, b) in enumerate(cols):
+        xx = M + 20 + i * cw
+        text(c, a, xx, 118, "Un", 15, C("#F2EFE6"))
+        text(c, b, xx, 100, "Px", 8.4, SAGE)
+    rrect(c, W - M - 94, 72, 80, 80, 8, fill=WHITE)
+    qr(c, REPO, W - M - 90, 76, 72)
+    text(c, "код и инструкция на GitHub", W - M - 54, 64, "Px", 7, SAGE, "c")
+    text(c, "Проект открытый (MIT), не аффилирован с Google и Fitbit, не является медицинским изделием.",
+         M, 34, "Px", 7.4, C("#6F8C80"))
+
+
 def page_cover(c):
+    if COVER_IMG:
+        return page_cover_image(c)
     c.setFillColor(DARK); c.rect(0, 0, W, H, stroke=0, fill=1)
     # мягкий световой круг
     for r, a in [(260, 0.05), (190, 0.05), (120, 0.06)]:
@@ -307,6 +366,11 @@ def draw_chat(c, x, ytop, w):
 def page_overview(c):
     header_light(c, 2, "Как это работает")
     y = H - 64
+    if HERO_IMG:
+        bh = 104
+        c.saveState(); p = c.beginPath(); p.roundRect(M, y - bh + 14, CW, bh, 14); c.clipPath(p, stroke=0)
+        draw_image_cover(c, HERO_IMG, M, y - bh + 14, CW, bh); c.restoreState()
+        y -= bh + 8
     text(c, "ЧТО ПОЛУЧИТСЯ", M, y, "PxB", 8, ACC); y -= 26
     text(c, "Ваш ИИ-ассистент видит данные браслета", M, y, "Un", 17, INK); y -= 18
     y -= para(c, "Личный сервер-коннектор связывает облако Google Health, куда синхронизируется браслет, "
@@ -321,7 +385,7 @@ def page_overview(c):
         xx = M + (i % 2) * (colw + 12); yy = y - (i // 2) * 34
         rrect(c, xx, yy - 26, colw, 26, 13, fill=WHITE, stroke=LINE)
         text(c, "«" + s + "»", xx + 14, yy - 16.5, "Px", 8.9, INK)
-    y -= 3 * 34 + 34
+    y -= 3 * 34 + (22 if HERO_IMG else 34)
 
     text(c, "КАК ЭТО РАБОТАЕТ", M, y, "PxB", 8, ACC); y -= 14
     nodes = [("Браслет Fitbit", "пульс, сон, шаги, SpO2"), ("Облако Google Health", "куда синхронизирует приложение Fitbit"),
@@ -353,7 +417,7 @@ def page_overview(c):
         check_icon(c, xx + 13.5, yy - 22, 9)
         text(c, a, xx + 34, yy - 21, "PxB", 9.4, INK)
         para(c, b, xx + 34, yy - 25, colw - 44, st(fontSize=8, leading=10.6, textColor=MUT))
-    y -= 2 * 58 + 26
+    y -= 2 * 58 + (16 if HERO_IMG else 26)
 
     text(c, "ПЛАН НА 40 МИНУТ", M, y, "PxB", 8, ACC); y -= 14
     plan = [("1", "Сервер", "5 мин"), ("2", "Google Cloud", "15 мин"), ("3", "Ключи", "3 мин"), ("4", "Подключение", "5 мин")]
