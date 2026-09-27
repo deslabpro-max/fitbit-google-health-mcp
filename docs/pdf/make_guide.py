@@ -247,22 +247,53 @@ def fade(c, x, y, w, h, color, top_alpha, bottom_alpha, steps=40):
         c.rect(x, y + h - (i + 1) * h / steps, w, h / steps + 0.5, stroke=0, fill=1); c.restoreState()
 
 
-def page_cover_image(c):
-    c.setFillColor(DARK); c.rect(0, 0, W, H, stroke=0, fill=1)
-    draw_image_cover(c, COVER_IMG, 0, 0, W, H)
-    fade(c, 0, H - 380, W, 380, DARK, 0.92, 0.0)
-    fade(c, 0, 0, W, 250, DARK, 0.0, 0.95)
+COVER_FULL = os.path.join(HERE, "cover-full.jpg") if os.path.exists(os.path.join(HERE, "cover-full.jpg")) else None
+
+
+def page_cover_full(c):
+    """Обложка из заранее собранного фона A4 (иллюстрация уже растворена в цвете)."""
+    c.drawImage(COVER_FULL, 0, 0, W, H)
     logo(c, M, H - 52, 12)
     x = M
-    for s in ["Бесплатно", "Открытый код · MIT", "Без посредников"]:
-        x += chip(c, x, H - 104, s, fill=DARK) + 6
+    for s_ in ["Бесплатно", "Открытый код · MIT", "Без посредников"]:
+        x += chip(c, x, H - 104, s_) + 6
     t = Paragraph("Спросите свой браслет. Словами.",
-                  st(fontName="Un", fontSize=34, leading=40, textColor=C("#F2EFE6")))
-    _, th = t.wrap(CW - 40, 400); t.drawOn(c, M, H - 124 - th)
-    y = H - 124 - th - 16
+                  st(fontName="Un", fontSize=32, leading=38, textColor=C("#F2EFE6")))
+    _, th = t.wrap(CW - 20, 400); t.drawOn(c, M, H - 122 - th)
+    y = H - 122 - th - 14
     para(c, "Пошаговая инструкция: подключаем браслет Fitbit (или Pixel Watch) к <b>Claude</b> и <b>ChatGPT</b>. "
             "Сон, пульс, шаги, SpO2 — прямо в чате, плюс дневник еды, воды и веса голосом.",
-         M, y, 360, st(fontSize=11, leading=16, textColor=SAGE_T))
+         M, y, 400, st(fontSize=11, leading=16, textColor=SAGE_T))
+    cover_footer(c)
+
+
+def page_cover_image(c):
+    """Обложка с тёмной иллюстрацией: картинка на всю ширину снизу,
+    заголовок — на тёмном поле сверху, края плавно уходят в фон."""
+    from reportlab.lib.utils import ImageReader
+    c.setFillColor(DARK); c.rect(0, 0, W, H, stroke=0, fill=1)
+    img = ImageReader(COVER_IMG); iw, ih = img.getSize()
+    dh = W * ih / iw; y0 = 70
+    c.drawImage(img, 0, y0, W, dh)
+    top = y0 + dh
+    fade(c, 0, top - 120, W, 120, DARK, 0.0, 0.0)
+    for i in range(40):  # верхний край картинки растворяется в фоне
+        a = 1 - i / 39
+        c.saveState(); c.setFillColor(DARK); c.setFillAlpha(a)
+        c.rect(0, top - 110 + i * 110 / 40, W, 110 / 40 + 0.6, stroke=0, fill=1); c.restoreState()
+    c.setFillColor(DARK); c.rect(0, top - 1, W, H - top + 1, stroke=0, fill=1)
+    fade(c, 0, 0, W, 230, DARK, 0.0, 0.97)
+    logo(c, M, H - 52, 12)
+    x = M
+    for s_ in ["Бесплатно", "Открытый код · MIT", "Без посредников"]:
+        x += chip(c, x, H - 104, s_) + 6
+    t = Paragraph("Спросите свой браслет. Словами.",
+                  st(fontName="Un", fontSize=32, leading=38, textColor=C("#F2EFE6")))
+    _, th = t.wrap(CW - 20, 400); t.drawOn(c, M, H - 122 - th)
+    y = H - 122 - th - 14
+    para(c, "Пошаговая инструкция: подключаем браслет Fitbit (или Pixel Watch) к <b>Claude</b> и <b>ChatGPT</b>. "
+            "Сон, пульс, шаги, SpO2 — прямо в чате, плюс дневник еды, воды и веса голосом.",
+         M, y, 400, st(fontSize=11, leading=16, textColor=SAGE_T))
     cover_footer(c)
 
 
@@ -309,6 +340,8 @@ def page_cover_photo(c):
 
 
 def page_cover(c):
+    if COVER_FULL:
+        return page_cover_full(c)
     if COVER_PHOTO:
         return page_cover_photo(c)
     if COVER_IMG:
@@ -409,7 +442,7 @@ def page_overview(c):
     if HERO_IMG:
         bh = 104
         c.saveState(); p = c.beginPath(); p.roundRect(M, y - bh + 14, CW, bh, 14); c.clipPath(p, stroke=0)
-        draw_image_cover(c, HERO_IMG, M, y - bh + 14, CW, bh, fy=0.64); c.restoreState()
+        draw_image_cover(c, HERO_IMG, M, y - bh + 14, CW, bh, fy=0.52); c.restoreState()
         y -= bh + 8
     text(c, "ЧТО ПОЛУЧИТСЯ", M, y, "PxB", 8, ACC); y -= 26
     text(c, "Ваш ИИ-ассистент видит данные браслета", M, y, "Un", 17, INK); y -= 18
