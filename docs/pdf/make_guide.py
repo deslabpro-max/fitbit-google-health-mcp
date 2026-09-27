@@ -222,17 +222,22 @@ def callout(c, x, ytop, w, title, body, warn=False):
 
 COVER_IMG = next((os.path.join(HERE, f) for f in ("cover.png", "cover.jpg", "cover.webp")
                   if os.path.exists(os.path.join(HERE, f))), None)
+COVER_PHOTO = next((os.path.join(HERE, f) for f in ("cover-photo.jpg", "cover-photo.png")
+                    if os.path.exists(os.path.join(HERE, f))), None)
 HERO_IMG = next((os.path.join(HERE, f) for f in ("hero.png", "hero.jpg", "hero.webp")
                  if os.path.exists(os.path.join(HERE, f))), None)
 
 
-def draw_image_cover(c, path, x, y, w, h):
-    """Картинка «cover»: заполняет рамку, лишнее обрезается по центру."""
+def draw_image_cover(c, path, x, y, w, h, fy=0.5):
+    """Картинка «cover»: заполняет рамку, лишнее обрезается.
+    fy — какая доля высоты картинки (сверху) встаёт в центр рамки."""
     from reportlab.lib.utils import ImageReader
     img = ImageReader(path); iw, ih = img.getSize()
     k = max(w / iw, h / ih); dw, dh = iw * k, ih * k
+    oy = y + h / 2 - dh * (1 - fy)
+    oy = min(y, max(y + h - dh, oy))
     c.saveState(); p = c.beginPath(); p.rect(x, y, w, h); c.clipPath(p, stroke=0)
-    c.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh); c.restoreState()
+    c.drawImage(img, x + (w - dw) / 2, oy, dw, dh); c.restoreState()
 
 
 def fade(c, x, y, w, h, color, top_alpha, bottom_alpha, steps=40):
@@ -277,7 +282,35 @@ def cover_footer(c):
          M, 34, "Px", 7.4, C("#6F8C80"))
 
 
+def page_cover_photo(c):
+    """Обложка с реальным фото товара в скруглённой карточке."""
+    c.setFillColor(DARK); c.rect(0, 0, W, H, stroke=0, fill=1)
+    for r, a in [(300, 0.05), (220, 0.06)]:
+        c.saveState(); c.setFillColor(ACC); c.setFillAlpha(a); c.circle(W / 2, 360, r, stroke=0, fill=1); c.restoreState()
+    logo(c, M, H - 52, 12)
+    x = M
+    for s_ in ["Бесплатно", "Открытый код · MIT", "Без посредников"]:
+        x += chip(c, x, H - 104, s_) + 6
+    t = Paragraph("Спросите свой браслет. Словами.",
+                  st(fontName="Un", fontSize=32, leading=38, textColor=C("#F2EFE6")))
+    _, th = t.wrap(CW - 20, 400); t.drawOn(c, M, H - 122 - th)
+    y = H - 122 - th - 14
+    y -= para(c, "Пошаговая инструкция: подключаем браслет Fitbit (или Pixel Watch) к <b>Claude</b> и <b>ChatGPT</b>. "
+              "Сон, пульс, шаги, SpO2 — прямо в чате, плюс дневник еды, воды и веса голосом.",
+              M, y, 400, st(fontSize=11, leading=16, textColor=SAGE_T))
+    top, bottom = y - 22, 184
+    ch = top - bottom; cw_ = min(CW, ch * 4 / 3); cx = (W - cw_) / 2
+    rrect(c, cx + 3, bottom - 4, cw_, ch, 16, fill=C("#06140F"))
+    c.saveState(); p = c.beginPath(); p.roundRect(cx, bottom, cw_, ch, 16); c.clipPath(p, stroke=0)
+    draw_image_cover(c, COVER_PHOTO, cx, bottom, cw_, ch); c.restoreState()
+    rrect(c, cx + 14, bottom + 14, 118, 22, 11, fill=DARK)
+    text(c, "Google Fitbit Air", cx + 26, bottom + 21.5, "PxS", 8.6, C("#F2EFE6"))
+    cover_footer(c)
+
+
 def page_cover(c):
+    if COVER_PHOTO:
+        return page_cover_photo(c)
     if COVER_IMG:
         return page_cover_image(c)
     c.setFillColor(DARK); c.rect(0, 0, W, H, stroke=0, fill=1)
@@ -376,7 +409,7 @@ def page_overview(c):
     if HERO_IMG:
         bh = 104
         c.saveState(); p = c.beginPath(); p.roundRect(M, y - bh + 14, CW, bh, 14); c.clipPath(p, stroke=0)
-        draw_image_cover(c, HERO_IMG, M, y - bh + 14, CW, bh); c.restoreState()
+        draw_image_cover(c, HERO_IMG, M, y - bh + 14, CW, bh, fy=0.64); c.restoreState()
         y -= bh + 8
     text(c, "ЧТО ПОЛУЧИТСЯ", M, y, "PxB", 8, ACC); y -= 26
     text(c, "Ваш ИИ-ассистент видит данные браслета", M, y, "Un", 17, INK); y -= 18
