@@ -27,6 +27,7 @@ W, H = A4
 M = 42                      # поля
 CW = W - 2 * M              # ширина контента
 REPO = "https://github.com/deslabpro-max/fitbit-google-health-mcp"
+BUY = "https://www.ozon.ru/product/google-fitnes-braslet-fitbit-air-chernyy-4965215410/"
 
 C = lambda h: colors.HexColor(h)
 DARK, DARK2, ACC, ACC_D, MINT = C("#0B211C"), C("#12302A"), C("#0E7C6B"), C("#0A5A4E"), C("#5FD4B0")
@@ -705,12 +706,29 @@ def page_faq(c):
             para(c, a, xx + 12, y - 23, qw - 24, st(fontSize=8.2, leading=11.2, textColor=MUT))
         y -= rh + 8
 
+    # где купить
+    y -= 6
+    kh = 74
+    rrect(c, M, y - kh, CW, kh, 12, fill=WHITE, stroke=LINE)
+    c.saveState(); c.translate(M + 40, y - kh / 2); c.rotate(-18)
+    c.setFillColor(C("#235549")); c.roundRect(-9, -30, 18, 60, 8, stroke=0, fill=1)
+    c.setFillColor(C("#1B2F2A")); c.roundRect(-8, -15, 16, 30, 7, stroke=0, fill=1)
+    c.setFillColor(MINT); c.circle(0, -8, 1.4, stroke=0, fill=1); c.restoreState()
+    text(c, "ГДЕ КУПИТЬ", M + 72, y - 20, "PxB", 7.8, ACC)
+    text(c, "Fitbit Air, чёрный — на Ozon", M + 72, y - 38, "Un", 12, INK)
+    text(c, "Подойдёт и любой Fitbit или Pixel Watch.", M + 72, y - 54, "Px", 8.4, MUT)
+    bw = button(c, W - M - 196, y - kh / 2 - 10.5, "Открыть на Ozon", fill=C("#005BFF"))
+    c.linkURL(BUY, (W - M - 196, y - kh / 2 - 10.5, W - M - 196 + bw, y - kh / 2 + 10.5), relative=0)
+    rrect(c, W - M - 66, y - kh + 8, 58, 58, 5, fill=WHITE, stroke=LINE)
+    qr(c, BUY, W - M - 63, y - kh + 11, 52)
+    y -= kh + 14
+
     # финальный блок
-    y -= 8
     bh = 96
     rrect(c, M, y - bh, CW, bh, 14, fill=DARK)
     rrect(c, W - M - 86, y - bh + 12, 72, 72, 7, fill=WHITE)
     qr(c, REPO, W - M - 82, y - bh + 16, 64)
+    c.linkURL(REPO, (M, y - bh, W - M, y), relative=0)
     text(c, "Код, обновления и помощь", M + 20, y - 30, "Un", 13, C("#F2EFE6"))
     para(c, "Всё открыто на GitHub: код, подробная инструкция, раздел Issues для вопросов. "
             "Новые версии подтягиваются кнопкой Sync fork в вашей копии — Cloudflare пересоберёт сам.",
